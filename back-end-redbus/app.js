@@ -74,6 +74,10 @@ const connect = () => {
   );
 };
 
+app.get('/api/health', (req, res) => {
+  res.status(200).send('OK');
+});
+
 
 const port = process.env.PORT || 5000;
 let host = process.env.HOST;
