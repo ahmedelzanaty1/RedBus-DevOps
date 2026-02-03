@@ -43,7 +43,7 @@ jobs:
       run: |
         docker build \
           -t ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com/${{ secrets.ECR_REPO_BACKEND }}:$TAG \
-          backend-red-bus
+          back-end-redbus
         docker push \
           ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com/${{ secrets.ECR_REPO_BACKEND }}:$TAG
 
@@ -52,7 +52,7 @@ jobs:
       run: |
         docker build \
           -t ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com/${{ secrets.ECR_REPO_FRONTEND }}:$TAG \
-          frontend-red-bus
+          front-end-redbus
         docker push \
           ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com/${{ secrets.ECR_REPO_FRONTEND }}:$TAG
 
