@@ -1,0 +1,66 @@
+name: Secure CI Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  security-scans:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # 1. Secrets Scan (Gitleaks)
+      - name: Gitleaks Scan
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # 2. Static Analysis (Semgrep)
+      - name: Semgrep Analysis
+        run: |
+          python3 -m pip install semgrep
+          semgrep scan --config auto --error
+
+      # 3. Dependency Scan (Trivy - FS)
+      - name: Trivy FS Scan (Dependencies)
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          format: 'table'
+          exit-code: '1' # Fails build if high vulnerabilities found
+          severity: 'CRITICAL,HIGH'
+
+  build-and-image-scan:
+    needs: security-scans
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # 4. Build Docker Images
+      - name: Build Backend Image
+        run: docker build -t redbus-backend:latest ./back-end-redbus
+
+      # 5. Container Image Scan (Trivy - Image)
+      - name: Trivy Image Scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'redbus-backend:latest'
+          format: 'table'
+          exit-code: '1'
+          severity: 'CRITICAL'
+
+  # 6. Dynamic Analysis (OWASP ZAP)
+  # Note: ZAP usually runs after the app is deployed to a staging URL
+  zap_scan:
+    needs: build-and-image-scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: OWASP ZAP Baseline Scan
+        uses: zaproxy/action-baseline@v0.12.0
+        with:
+          target: 'https://your-staging-url.com' # Replace with actual URL
