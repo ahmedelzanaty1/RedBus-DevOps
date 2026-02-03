@@ -38,10 +38,23 @@ jobs:
           echo "TAG=dev-${GITHUB_SHA}" >> $GITHUB_ENV
         fi
 
+    # 🔹 Backend
     - name: Build & Push Backend Image
       run: |
-        docker build -t ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com/${{ secrets.ECR_REPO_BACKEND }}:$TAG backend
-        docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com/${{ secrets.ECR_REPO_BACKEND }}:$TAG
+        docker build \
+          -t ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com/${{ secrets.ECR_REPO_BACKEND }}:$TAG \
+          backend-red-bus
+        docker push \
+          ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com/${{ secrets.ECR_REPO_BACKEND }}:$TAG
+
+    # 🔹 Frontend
+    - name: Build & Push Frontend Image
+      run: |
+        docker build \
+          -t ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com/${{ secrets.ECR_REPO_FRONTEND }}:$TAG \
+          frontend-red-bus
+        docker push \
+          ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com/${{ secrets.ECR_REPO_FRONTEND }}:$TAG
 
     - name: Update kubeconfig
       run: |
@@ -49,8 +62,16 @@ jobs:
           --region $AWS_REGION \
           --name $EKS_CLUSTER_NAME
 
+    # 🔹 Deploy Backend
     - name: Deploy backend to EKS
       run: |
         kubectl set image deployment/backend \
           backend=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com/${{ secrets.ECR_REPO_BACKEND }}:$TAG \
+          -n $NAMESPACE
+
+    # 🔹 Deploy Frontend
+    - name: Deploy frontend to EKS
+      run: |
+        kubectl set image deployment/frontend \
+          frontend=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com/${{ secrets.ECR_REPO_FRONTEND }}:$TAG \
           -n $NAMESPACE
