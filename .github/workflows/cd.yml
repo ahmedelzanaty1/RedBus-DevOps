@@ -23,55 +23,62 @@ jobs:
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ secrets.AWS_REGION }}
+        aws-region: ${{ env.AWS_REGION }}
 
     - name: Login to Amazon ECR
+      id: login-ecr  
       uses: aws-actions/amazon-ecr-login@v2
 
     - name: Detect environment
       run: |
         if [[ "${GITHUB_REF_NAME}" == "main" ]]; then
           echo "NAMESPACE=redbus-prod" >> $GITHUB_ENV
-          echo "TAG=prod-${GITHUB_SHA}" >> $GITHUB_ENV
+          echo "TAG=prod-${GITHUB_SHA::7}" >> $GITHUB_ENV
         else
           echo "NAMESPACE=redbus-dev" >> $GITHUB_ENV
-          echo "TAG=dev-${GITHUB_SHA}" >> $GITHUB_ENV
+          echo "TAG=dev-${GITHUB_SHA::7}" >> $GITHUB_ENV
         fi
 
-    # 🔹 Backend
+    # 🔹 Build & Push Backend
     - name: Build & Push Backend Image
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        ECR_REPOSITORY: ${{ secrets.ECR_REPO_BACKEND }}
       run: |
-        docker build \
-          -t ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com/${{ secrets.ECR_REPO_BACKEND }}:$TAG \
-          back-end-redbus
-        docker push \
-          ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com/${{ secrets.ECR_REPO_BACKEND }}:$TAG
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$TAG ./back-end-redbus
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$TAG
 
-    # 🔹 Frontend
+    # 🔹 Build & Push Frontend
     - name: Build & Push Frontend Image
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        ECR_REPOSITORY: ${{ secrets.ECR_REPO_FRONTEND }}
       run: |
-        docker build \
-          -t ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com/${{ secrets.ECR_REPO_FRONTEND }}:$TAG \
-          front-end-redbus
-        docker push \
-          ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com/${{ secrets.ECR_REPO_FRONTEND }}:$TAG
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$TAG ./front-end-redbus
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$TAG
 
     - name: Update kubeconfig
       run: |
         aws eks update-kubeconfig \
-          --region $AWS_REGION \
-          --name $EKS_CLUSTER_NAME
+          --region ${{ env.AWS_REGION }} \
+          --name ${{ env.EKS_CLUSTER_NAME }}
 
-    # 🔹 Deploy Backend
+    # 🔹 Deploy Backend to EKS
     - name: Deploy backend to EKS
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        ECR_REPOSITORY: ${{ secrets.ECR_REPO_BACKEND }}
       run: |
         kubectl set image deployment/backend \
-          backend=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com/${{ secrets.ECR_REPO_BACKEND }}:$TAG \
+          backend=$ECR_REGISTRY/$ECR_REPOSITORY:$TAG \
           -n $NAMESPACE
 
-    # 🔹 Deploy Frontend
+    # 🔹 Deploy Frontend to EKS
     - name: Deploy frontend to EKS
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        ECR_REPOSITORY: ${{ secrets.ECR_REPO_FRONTEND }}
       run: |
         kubectl set image deployment/frontend \
-          frontend=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com/${{ secrets.ECR_REPO_FRONTEND }}:$TAG \
+          frontend=$ECR_REGISTRY/$ECR_REPOSITORY:$TAG \
           -n $NAMESPACE
