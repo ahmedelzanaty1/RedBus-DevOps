@@ -1,0 +1,56 @@
+name: CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+
+env:
+  AWS_REGION: us-east-1
+  EKS_CLUSTER_NAME: redbus-cluster
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
+
+    - name: Login to Amazon ECR
+      uses: aws-actions/amazon-ecr-login@v2
+
+    - name: Detect environment
+      run: |
+        if [[ "${GITHUB_REF_NAME}" == "main" ]]; then
+          echo "NAMESPACE=redbus-prod" >> $GITHUB_ENV
+          echo "TAG=prod-${GITHUB_SHA}" >> $GITHUB_ENV
+        else
+          echo "NAMESPACE=redbus-dev" >> $GITHUB_ENV
+          echo "TAG=dev-${GITHUB_SHA}" >> $GITHUB_ENV
+        fi
+
+    - name: Build & Push Backend Image
+      run: |
+        docker build -t ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com/${{ secrets.ECR_REPO_BACKEND }}:$TAG backend
+        docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com/${{ secrets.ECR_REPO_BACKEND }}:$TAG
+
+    - name: Update kubeconfig
+      run: |
+        aws eks update-kubeconfig \
+          --region $AWS_REGION \
+          --name $EKS_CLUSTER_NAME
+
+    - name: Deploy backend to EKS
+      run: |
+        kubectl set image deployment/backend \
+          backend=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com/${{ secrets.ECR_REPO_BACKEND }}:$TAG \
+          -n $NAMESPACE

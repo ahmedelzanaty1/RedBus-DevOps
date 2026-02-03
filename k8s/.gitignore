@@ -1,0 +1,19 @@
+# Ignore Helm charts (the compressed files you download)
+*.tgz
+
+# Ignore any temporary helm folders
+charts/
+tmp/
+
+# Ignore sensitive Kubernetes Secrets 
+# (Always keep your real secrets out of Git, use a template instead)
+*secret.yaml
+*secrets.yaml
+
+# Ignore kubeconfig if you happen to copy it here
+config
+.kube/
+
+# Ignore terraform files if they accidentally ended up here
+.terraform/
+*.tfstate*
