@@ -4,26 +4,22 @@ metadata:
   name: redbus-ingress
   namespace: redbus-prod
   annotations:
-    kubernetes.io/ingress.class: alb
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'
 spec:
+  ingressClassName: alb 
   rules:
-    - host: api.redbus.com
-      http:
+    - http:
         paths:
-          - path: /
+          - path: /api  
             pathType: Prefix
             backend:
               service:
                 name: backend-service
                 port:
                   number: 80
-    - host: redbus.com
-      http:
-        paths:
-          - path: /
+          - path: /     
             pathType: Prefix
             backend:
               service:
