@@ -1,130 +1,108 @@
-# Redbus
+# RedBus Clone – End-to-End DevOps Project (AWS EKS)
 
-We have Cloned a bus ticketing and hiring platform called redbus.
-redBus is an Indian online bus ticketing platform providing ticket booking facility through its website, iOS and Android mobile apps. It connects bus travellers with a network of over 2500 bus operators, across India, countries in South East Asia and Latin America.
-It connects bus travellers with a network of over 2500 bus operators, across India, countries in South East Asia and Latin America.
+This project demonstrates a production-style DevOps implementation for a microservices-based web application (RedBus Clone).  
+The focus of this repository is **infrastructure, CI/CD, containerization, Kubernetes deployment, and security-first DevOps practices on AWS**.
 
-In this project , we have tried to make a perfect clone of redbus.in.
+---
 
-### Live Link :  https://redbus.netlify.app/
+## 🧠 Project Overview
 
-# Steps to install the project:
+**Application Stack**
+- Frontend: React
+- Backend: Node.js (Express)
+- Database: MongoDB
 
-## Install basic Software:
-* Install NodeJS
-* Install VS Code
-* Install Git
+**Cloud & DevOps Stack**
+- AWS (EKS, ECR, IAM, VPC, ALB)
+- Docker
+- Kubernetes (EKS – Managed Node Groups)
+- Terraform (Infrastructure as Code)
+- GitHub Actions (CI/CD)
+- DevSecOps (Shift-left security)
 
-## Clone the following git repository inside any folder:
+---
 
-* https://github.com/nitansh11/redbus
+## 🏗 Architecture Summary
 
-##  Open the cloned git repo in VS Code and install the required dependencies.
+- The frontend and backend are containerized using Docker.
+- Images are built and pushed to Amazon ECR.
+- The application is deployed on AWS EKS using Kubernetes manifests.
+- AWS ALB is used as the entry point for external traffic.
+- Infrastructure is fully provisioned using Terraform.
+- CI/CD pipelines automate build, security checks, and deployments.
 
-* #### Open a terminal and make sure you are in the working directory folder (Inside redbus folder go to : redbus/front-end-redbus and redbus/back-end-redbus), run this command to install the required project dependencies in both back-end and front-end folder.
-  * npm install   
+---
 
-* #### Now, Run npm start in back-end-redbus as well as front-end-redbus folder in two separate terminals to start the backend and frontend
+## 🔄 DevOps Lifecycle Implemented
 
-* #### Now you can access the app at this URL: http://localhost:3000
+### 1️⃣ Architecture & Design
+- System architecture designed before implementation
+- Clear separation between application, infrastructure, and CI/CD
 
-## Technologies used
-  
-  * React
-  * CSS
-  * Express
-  * MongoDB
-  * Mongoose
-  * Libraries used
-      
-      * Redux
-      * React-redux
-      * Redux-thunk
-      * material-ui/core
-      * material-ui/icons
-      * material-ui/lab
-      * uuid
-      * React-dom
-      * React-icons
-      * react-google-login
-      * react-icons
-      * react-modal
-      * react-scripts
-      * react-stripe-checkout
-      
-      
-## How to use the product
+### 2️⃣ Git Strategy
+- Structured repository layout
+- Branching strategy (main, develop, feature)
+- Protected main branch
 
+### 3️⃣ Dockerization
+- Multi-stage Docker builds for frontend and backend
+- Optimized images
+- Docker Compose for local development
 
- 1. In order to use the product , you need to do npm start in your console.
+### 4️⃣ CI + Security Baseline
+- Automated CI pipelines using GitHub Actions
+- Linting and build validation
+- Docker image build automation
+- Secret scanning and dependency scanning (shift-left security)
 
-  ![Landing Page](https://github.com/nitansh11/redbus/blob/master/Samples/HomePage1.PNG)
+### 5️⃣ Infrastructure Provisioning (Terraform)
+- AWS VPC, subnets, IAM roles
+- EKS cluster with Managed Node Groups
+- Amazon ECR for container images
+- Remote Terraform state using S3
 
- 2. Here you can see our landing page , If you are using this product for the first time , you are a new user and you can login by clicking on dropdown on the right side of navbar and currently we are serving buses between Lucknow and Faizabad, so enter Lucknow in source and Faizabad in destination and select any date as per your choice.
+### 6️⃣ Kubernetes Platform Setup
+- Namespaces for environment isolation
+- AWS Load Balancer Controller
+- ConfigMaps and Secrets
+- Resource limits and requests
 
-  ![Sign up](https://github.com/nitansh11/redbus/blob/master/Samples/GoogleSignIn.PNG)
+### 7️⃣ Continuous Deployment (CI/CD)
+- Automated image build and push to ECR
+- Kubernetes deployments updated automatically
+- Environment separation (dev / staging / production)
 
- 3. This page contains the list of all the buses between source and destination.On this page, user can use filtering and sorting as per his requirement.
+### 8️⃣ Advanced DevSecOps
+- Kubernetes RBAC configuration
+- Network policies
+- TLS configuration
+- Pod Security Standards
+- Reduced attack surface
 
-  ![list_of_buses](https://github.com/nitansh11/redbus/blob/master/Samples/listOfbuseswithfilters.PNG)
- 
- 4. Here, you will get all the list of buses acoording to your location and you can also filter them as per your requirement.
+---
 
- 5. After this , you can click on the View Seat button to book the seats, and select the seats as per your requirement.
-   Note : You cant select the red seats , since they are already booked.
-  
-   ![seet_booking](https://github.com/nitansh11/redbus/blob/master/Samples/seatBookUi.PNG)
- 
- 6.Now, select the boarding and dropping point and click on the continue button, now a form will open , here you need to enter the passenger details, and click on the Procced To Pay button.
-  
-   ![stripe payment](https://github.com/nitansh11/redbus/blob/master/Samples/StripePayment.PNG)
+## 🔐 Security Approach
 
- 7. On this page click on the button Pay with Stripe , here enter your email , card number as 4242 4242 4242 4242 , expiary date as 12/21 and cvv as 1234 and click on the pay button , your seat has been booked :relaxed:
+- Secrets are never committed to Git
+- Security checks integrated early in CI pipelines
+- Least-privilege IAM roles
+- Kubernetes-native security controls
 
-  8. Now on this page you can see all your bookings.
-  
-  ![list_of_bookings](https://github.com/nitansh11/redbus/blob/master/Samples/ListOfBookings.PNG)
-  
-  9. Next feature that we have implemented is Bus Hire. Click on Bus Hire from the top bar. From this page, user can hire a bus for a round trip.
-  
-  ![bus hire landing page](https://github.com/nitansh11/redbus/blob/master/Samples/bushire1.png)
-  
-  10. On the Bus Hire landing page, click on Outstation, after that user will be asked to enter the few details.After entering those, click on proceed.
+---
 
-  ![bus hire form page](https://github.com/nitansh11/redbus/blob/master/Samples/bushire2.png)
-  
-  11. Select a bus as per your choice and click on View Details to proceed.
+## 📂 Repository Structure
+redbus/
+├── frontend/
+├── backend/
+├── infra/
+│ └── terraform/
+├── k8s/
+├── ci/
+└── README.md
 
-  ![bus select page](https://github.com/nitansh11/redbus/blob/master/Samples/bishire3.png)
-  
-  12.Click on Book, to book that particular vehicle and proceed for the payment.
-  
-  ![bus book page](https://github.com/nitansh11/redbus/blob/master/Samples/bushire4.png)
-  
-  13. On this page click on the button Pay with Stripe , here enter your email , card number as 4242 4242 4242 4242 , expiary date as 12/21 and CVV as 123 and click on the pay button , your bus has been booked :relaxed:
-  
-  ![payment page](https://github.com/nitansh11/redbus/blob/master/Samples/bushire5.png)
+---
 
- 
-### End-notes
- 
-  We have tried our best to give mostly all the functionality available on the actual website.
+## 🚀 How to Run Locally
 
-  
-  ### Contributors:
-
-  * Nitansh Rastogi
-
-    * Github : [nitansh11](https://github.com/nitansh11)
-
-  * Uditanshu Kumar
-
-    * Github : [udit22022000](https://github.com/udit22022000)
-
-  * Rohan Kumar Banarwal
-
-    * Github : [kumarrohan2804](https://github.com/kumarrohan2804)
-
- * Archana Singh
-
-    * Github : [archana-sing](https://github.com/archana-sing)
+```bash
+docker compose up
